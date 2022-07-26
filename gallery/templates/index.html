@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <meta name="viewport" content="width=device-width,intial-scale=1.0">
+    <head>
+        {% load static%}
+        <title>Photo Gallery</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" >
+        <script>
+
+            function do_scroll(x){
+                var y = document.getElementById('roller');
+                if(x=='top'){
+                    y.scrollBy(0,-100);
+                }
+                else{
+                    y.scrollBy(0,100);
+                }
+            }
+
+            function enlarge_image(x){
+                data = {'image':x};
+                fetch('/displaybig/?' + new URLSearchParams({'imagename':x}),{
+                    method:'GET'
+                })
+                .then( response => {
+                    return response.json()
+                })
+                .then (data =>{
+                    console.log(data.imagepath);
+                    var y = document.getElementById('enlarge');
+                    y.style.backgroundImage = `url(${data.imagepath})`;
+                    console.log(data.imagepath);
+                })
+            }
+
+            function display(x){
+                fetch('/load/?'+ new URLSearchParams({'im':x}),{
+                    method:'GET'
+                })
+                .then(response =>{
+                    return response.json()
+                })
+                .then(data=>{
+                    var parent = document.getElementById('roller');
+                    while(parent.firstChild){
+                        parent.removeChild(parent.lastChild);
+                    }
+                    console.log('REMOVED OLD IMAGES');
+                    console.log(data);
+                    console.log('data successfully sent');
+                    Object.entries(data).forEach(key => {
+                        obj = document.createElement('img');
+                        obj.id = key[0];
+                        obj.src = key[1];
+                        obj.onclick=function(){enlarge_image(key[0])};
+                        parent.appendChild(obj);
+                    });
+                    console.log("ADDED NEW IMAGES");
+                })
+            }
+        </script>
+    </head>
+    <body>
+        <h1 style="text-align:center;font-size: 60px;">PHOTO GALLERY</h1>
+        <div class="categories">
+            <h2><a href="#" onclick="display('fruits')">Fruits</a></h2>
+            <h2><a href="#" onclick="display('castles')">Castles</a></h2>
+            <h2><a href="#" onclick="display('bikes')">Bikes</a></h2>
+            <h2><a href="#" onclick="display('cars')">Cars</a></h2>
+        </div>
+
+    
+        <div id="enlarge" class="enlarge">
+            
+        </div>
+        
+        <div id="roller" class="scroller">
+            <img src="/static/file.jpg" onclick="enlarge_image('abcd')">
+            <img src="/static/file.jpg">
+            <img src="/static/file.jpg">
+            <img src="/static/file.jpg">
+            <img src="/static/file.jpg">
+        </div>
+        <button id="top" onclick="do_scroll('top')">></button>
+        <button id="down" onclick="do_scroll('down')">></button>
+    </body>
+</html>
